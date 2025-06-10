@@ -48,5 +48,6 @@ TalentHuntPro/
 │   └── ...
 └── static/
 
-
-
+🙏 Credits
+Built with ❤️ by Vivek & ChatGPT
+Rotary Club Training Program, June 2025
