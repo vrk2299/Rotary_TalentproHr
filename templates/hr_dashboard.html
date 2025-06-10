@@ -3,33 +3,41 @@
 <head>
     <title>HR Dashboard</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
         table { border-collapse: collapse; width: 100%; }
-        th, td { padding: 12px; border: 1px solid #ccc; text-align: left; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; vertical-align: top; }
         th { background-color: #f2f2f2; }
-        a { color: blue; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        pre { background-color: #f9f9f9; padding: 10px; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <h2>Welcome, HR!</h2>
-    <h3>Job Applications</h3>
+    <h2>HR Dashboard</h2>
     <table>
         <thead>
             <tr>
+                <th>Job</th>
                 <th>Applicant Name</th>
                 <th>Email</th>
                 <th>Resume</th>
-                <th>Job Applied</th>
             </tr>
         </thead>
         <tbody>
             {% for app in applications %}
             <tr>
-                <td>{{ app.name }}</td>
-                <td>{{ app.email }}</td>
-                <td><a href="{{ url_for('view_resume', resume_content=app.resume) }}" target="_blank">View</a></td>
                 <td>{{ app.job.title }}</td>
+                <td>{{ app.name or 'N/A' }}</td>
+                <td>{{ app.email or 'N/A' }}</td>
+                <td>
+                    {% if app.resume_filename %}
+                        <strong>PDF:</strong> <a href="{{ url_for('view_resume', filename=app.resume_filename) }}" target="_blank">Download Resume</a><br>
+                    {% endif %}
+                    
+                    {% if app.resume_text %}
+                        <strong>Text:</strong>
+                        <pre>{{ app.resume_text }}</pre>
+                    {% elif not app.resume_filename %}
+                        No Resume Submitted
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
