@@ -1,59 +1,66 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, Markup
+from flask_sqlalchemy import SQLAlchemy
 from models import db, User, Job, Application
-from datetime import timedelta
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key"
-app.permanent_session_lifetime = timedelta(minutes=30)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///talenthunt.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///talenthunt.db'  # Update to RDS later
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db.init_app(app)
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
+# ---------- ROUTES ----------
 
 @app.route('/')
-def index():
+def home():
+    return render_template('home.html')
+
+@app.route('/jobs')
+def jobs():
     jobs = Job.query.all()
-    return render_template("index.html", jobs=jobs)
+    return render_template('jobs.html', jobs=jobs)
 
-@app.route('/job/<int:job_id>')
-def job_detail(job_id):
+@app.route('/apply/<int:job_id>', methods=['GET', 'POST'])
+def apply(job_id):
     job = Job.query.get_or_404(job_id)
-    return render_template("job_detail.html", job=job)
-
-@app.route('/apply', methods=['POST'])
-def apply():
-    name = request.form['name']
-    email = request.form['email']
-    resume_link = request.form['resume']
-    job_id = request.form['job_id']
-    new_app = Application(candidate_name=name, candidate_email=email, resume_link=resume_link, applied_job_id=job_id)
-    db.session.add(new_app)
-    db.session.commit()
-    return render_template("apply_success.html", name=name)
-
-@app.route('/hr/login', methods=['GET', 'POST'])
-def hr_login():
     if request.method == 'POST':
-        user = User.query.filter_by(username=request.form['username']).first()
-        if user and user.password == request.form['password']:
-            session['user'] = user.username
-            return redirect('/hr/dashboard')
-        return "Invalid login"
-    return render_template("hr_login.html")
+        name = request.form['name']
+        email = request.form['email']
+        resume = request.form['resume']
+        application = Application(name=name, email=email, resume=resume, job_id=job.id)
+        db.session.add(application)
+        db.session.commit()
+        return render_template('thanks.html', name=name)
+    return render_template('apply.html', job=job)
 
-@app.route('/hr/dashboard')
-def hr_dashboard():
-    if 'user' not in session:
-        return redirect('/hr/login')
-    apps = Application.query.all()
-    return render_template("hr_dashboard.html", applications=apps)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username=username, password=password).first()
+        if user:
+            jobs = Job.query.all()
+            applications = Application.query.all()
+            return render_template('hr_dashboard.html', jobs=jobs, applications=applications)
+        else:
+            error = 'Invalid credentials'
+    return render_template('login.html', error=error)
 
-@app.route('/health')
-def health():
-    return "OK", 200
+@app.route('/view_resume')
+def view_resume():
+    resume_content = request.args.get('resume_content', '')
+    return f"""
+    <html>
+    <head><title>Resume</title></head>
+    <body style='font-family:sans-serif;padding:20px'>
+        <h2>Resume Preview</h2>
+        <pre>{Markup(resume_content)}</pre>
+        <a href="/login">Back to Dashboard</a>
+    </body>
+    </html>
+    """
 
+# ---------- MAIN ----------
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=5000)

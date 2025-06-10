@@ -4,18 +4,19 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), unique=True)
-    password = db.Column(db.String(100))
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
 
 class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200))
-    description = db.Column(db.Text)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
 
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    candidate_name = db.Column(db.String(100))
-    candidate_email = db.Column(db.String(120))
-    resume_link = db.Column(db.String(300))
-    applied_job_id = db.Column(db.Integer, db.ForeignKey('job.id'))
+    name = db.Column(db.String(100), nullable=False)           # ✅ Add this
+    email = db.Column(db.String(120), nullable=False)          # ✅ Add this
+    resume = db.Column(db.Text, nullable=False)                # ✅ Add this
+    job_id = db.Column(db.Integer, db.ForeignKey('job.id'))    # ✅ Add this
+
     job = db.relationship('Job', backref=db.backref('applications', lazy=True))

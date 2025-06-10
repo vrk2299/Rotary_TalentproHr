@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Available Jobs | TalentHuntPro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+            padding: 40px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .job {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 15px auto;
+            border-radius: 10px;
+            width: 80%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .job h2 {
+            margin-top: 0;
+        }
+        .job p {
+            margin-bottom: 10px;
+        }
+        .apply-btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+        .apply-btn:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Open Job Listings</h1>
+    {% for job in jobs %}
+    <div class="job">
+        <h2>{{ job.title }}</h2>
+        <p>{{ job.description }}</p>
+        <a class="apply-btn" href="{{ url_for('apply', job_id=job.id) }}">Apply</a>
+    </div>
+    {% endfor %}
+</body>
+</html>
